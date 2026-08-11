@@ -166,18 +166,22 @@ export function buildRetargetedClip(
         // Pure relative delta: remove source rest, get motion only
         const deltaQ = sourceRestInv.clone().multiply(qAnim);
 
-        // 1. LEG SWING CORRECTION: SMPL leg forward pitch is inverted relative to CC_Base.
-        // Conjugating delta.x and delta.y reverses swing direction so the character walks FORWARD instead of backward.
+        // 1. LEG SWING CORRECTION: Reverse leg pitch so steps go FORWARD.
         if (mappedTargetBone.includes('Thigh') || mappedTargetBone.includes('Calf') || mappedTargetBone.includes('Foot')) {
           deltaQ.x = -deltaQ.x;
           deltaQ.y = -deltaQ.y;
         }
 
-        // 2. ARM POSITION CORRECTION: Remove forced conjugate() that held arms up.
-        // Instead, invert delta.x & delta.z so arms hang DOWN naturally by sides and swing forward.
-        if (ARM_BONES.has(mappedTargetBone)) {
-          deltaQ.x = -deltaQ.x;
-          deltaQ.z = -deltaQ.z;
+        // 2. ARM POSTURE CORRECTION:
+        // SMPL rest pose has arms sticking straight OUT horizontally (T-Pose).
+        // Without an offset, applying the AI walk delta keeps the arms elevated at 90° in the air.
+        // We apply a drop offset (-75° Z for Left, +75° Z for Right) to drop arms down to the sides naturally.
+        if (mappedTargetBone === 'CC_Base_L_Upperarm') {
+          const armDropQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI * 0.42);
+          deltaQ.premultiply(armDropQuat);
+        } else if (mappedTargetBone === 'CC_Base_R_Upperarm') {
+          const armDropQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI * 0.42);
+          deltaQ.premultiply(armDropQuat);
         }
 
         // Apply motion delta on top of target rest pose
