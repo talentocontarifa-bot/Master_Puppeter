@@ -166,13 +166,18 @@ export function buildRetargetedClip(
         // Pure relative delta: remove source rest, get motion only
         const deltaQ = sourceRestInv.clone().multiply(qAnim);
 
-        // For arm bones: conjugate (invert) the delta quaternion.
-        // This fully reverses the rotation direction, fixing the
-        // "arms going backward" issue without L/R mirroring.
-        // Negate X,Y,Z uniformly (unlike 180°X which only negated Y,Z
-        // and caused left/right arm swap).
+        // 1. LEG SWING CORRECTION: SMPL leg forward pitch is inverted relative to CC_Base.
+        // Conjugating delta.x and delta.y reverses swing direction so the character walks FORWARD instead of backward.
+        if (mappedTargetBone.includes('Thigh') || mappedTargetBone.includes('Calf') || mappedTargetBone.includes('Foot')) {
+          deltaQ.x = -deltaQ.x;
+          deltaQ.y = -deltaQ.y;
+        }
+
+        // 2. ARM POSITION CORRECTION: Remove forced conjugate() that held arms up.
+        // Instead, invert delta.x & delta.z so arms hang DOWN naturally by sides and swing forward.
         if (ARM_BONES.has(mappedTargetBone)) {
-          deltaQ.conjugate();
+          deltaQ.x = -deltaQ.x;
+          deltaQ.z = -deltaQ.z;
         }
 
         // Apply motion delta on top of target rest pose
