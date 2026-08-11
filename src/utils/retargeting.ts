@@ -135,18 +135,12 @@ export function buildRetargetedClip(
       return; // Skip unmapped joints
     }
 
-    // CRITICAL: Only allow position tracks on the ROOT bone (CC_Base_Hip)
-    // Position tracks on limbs would collapse the skeleton
-    if (trackProperty === 'position' && mappedTargetBone !== 'CC_Base_Hip') {
-      return;
-    }
-
-    // For position tracks on root, pass through scaled
-    if (trackProperty === 'position' && mappedTargetBone === 'CC_Base_Hip') {
-      const newTrackName = `${mappedTargetBone}.position`;
-      const newTrack = track.clone();
-      newTrack.name = newTrackName;
-      retargetedTracks.push(newTrack);
+    // CRITICAL FIX: Ignore ALL position tracks by default (including root/pelvis).
+    // Raw FBX position tracks carry absolute spatial translations in SMPL coordinates/scale.
+    // Applying raw position tracks overwrites Rattle's rest position (Z=45.69) or teleports
+    // the character across the scene.
+    // In-place rotation retargeting keeps the character centered and rock-solid.
+    if (trackProperty === 'position') {
       return;
     }
 
