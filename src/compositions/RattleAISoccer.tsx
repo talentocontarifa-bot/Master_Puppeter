@@ -29,28 +29,14 @@ export const RattleAISoccer: React.FC = () => {
   const frame = useCurrentFrame();
 
   const cameraConfig = useMemo(() => {
-    let pos: [number, number, number] = [0, 0, 2.8];
-    let lookAt: [number, number, number] = [0, 0, 0];
-    let fov = 28;
-
-    if (frame < 60) {
-      // Cut 1: Running Camera Tracking
-      const panX = interpolate(frame, [0, 60], [-0.3, 0.2]);
-      pos = [panX, 0.05, 2.6];
-      fov = 28;
-    } else if (frame >= 60 && frame < 130) {
-      // Cut 2: Low-Angle Kick Impact Close-up!
-      pos = [0.4, -0.4, 1.9];
-      lookAt = [0, 0.1, 0];
-      fov = 22;
-    } else {
-      // Cut 3: Wide Follow-Through Stadium Shot
-      pos = [-0.3, 0.1, 2.7];
-      fov = 26;
-    }
+    // Static Wide Angle General Shot (Plano General Estático)
+    // Distance Z=6.0, FOV=45 to see full translation & motion without camera cuts
+    const pos: [number, number, number] = [0, 0, 6.0];
+    const lookAt: [number, number, number] = [0, 0, 0];
+    const fov = 45;
 
     return { pos, fov, lookAt };
-  }, [frame]);
+  }, []);
 
   return (
     <AbsoluteFill

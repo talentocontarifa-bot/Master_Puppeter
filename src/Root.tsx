@@ -6,6 +6,7 @@ import { RattleAIMotion } from './compositions/RattleAIMotion';
 import { RattleAIDance } from './compositions/RattleAIDance';
 import { RattleAISoccer } from './compositions/RattleAISoccer';
 import { SuperChristShowcase } from './compositions/SuperChristShowcase';
+import { SuperChristWalkShowcase } from './compositions/SuperChristWalkShowcase';
 import { SimpleTest } from './compositions/SimpleTest';
 import { LegTest } from './compositions/LegTest';
 import lipSyncData from './assets/lipsync.json';
@@ -56,6 +57,14 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="SuperChristShowcase"
         component={SuperChristShowcase}
+        durationInFrames={180}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+      <Composition
+        id="SuperChristWalkShowcase"
+        component={SuperChristWalkShowcase}
         durationInFrames={180}
         fps={30}
         width={1920}

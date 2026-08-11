@@ -172,10 +172,19 @@ export function buildRetargetedClip(
           deltaQ.y = -deltaQ.y;
         }
 
-        // 2. ARM POSTURE CORRECTION:
-        // SMPL rest pose has arms sticking straight OUT horizontally (T-Pose).
-        // Without an offset, applying the AI walk delta keeps the arms elevated at 90° in the air.
-        // We apply a drop offset (-75° Z for Left, +75° Z for Right) to drop arms down to the sides naturally.
+        // 2. ARM AXIS CORRECTION (180° X conjugation):
+        // Negate Y,Z only. This preserves X (forward-back swing) intact
+        // while flipping the lateral/twist axes that differ between SMPL and CC_Base.
+        // - conjugate() (negate X,Y,Z) → arms ok but swing reversed
+        // - negate X,Y (180° Z) → arms twisted
+        // - negate Y,Z (180° X) → preserves swing, fixes twist
+        if (ARM_BONES.has(mappedTargetBone)) {
+          deltaQ.y = -deltaQ.y;
+          deltaQ.z = -deltaQ.z;
+        }
+
+        // Step B: Drop arms from T-pose to natural walk posture.
+        // SMPL rest = arms horizontal. We rotate them down ~75° so they hang at the sides.
         if (mappedTargetBone === 'CC_Base_L_Upperarm') {
           const armDropQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI * 0.42);
           deltaQ.premultiply(armDropQuat);
